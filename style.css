@@ -204,3 +204,21 @@ input[type="file"] {
     gap: 15px;
     width: 100%;
 }
+
+/* Delete button placement inside the upper colored filing tab */
+.delete-btn {
+    background-color: #fffdf9;
+    border: 1px solid #4a3c31;
+    color: #8b3c3c; /* Muted vintage brick red for warning */
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    position: absolute;
+    top: -15px; /* Floats inside the upper tab */
+    right: 65px; /* Spaced out so it doesn't overlap the Edit button */
+    z-index: 10;
+}
+
+.delete-btn:hover {
+    background-color: #ffdddd; /* Soft pink highlight on hover */
+}

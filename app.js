@@ -9,7 +9,7 @@ const imageUpload = document.getElementById('image-upload');
 // Temporary storage for image uploads
 let currentUploadedImageBase64 = "";
 
-// NEW: Tracks if we are editing an existing recipe (stores its ID, or null if new)
+// Tracks if we are editing an existing recipe
 let editingRecipeId = null;
 
 // 2. Load existing recipes from localStorage
@@ -32,8 +32,9 @@ function displayRecipes(filterCategory = 'all') {
         if (recipe.category === 'baked-goods') card.style.borderTopColor = '#dfb15b';
         if (recipe.category === 'drinks') card.style.borderTopColor = '#6b8e93';
 
-        // Build card content & include an "Edit" button
+        // NEW: Included the Delete button next to the Edit button in the string template
         let cardHTML = `
+            <button class="delete-btn" onclick="deleteRecipe(${recipe.id})">Delete</button>
             <button class="edit-btn" onclick="prepareEdit(${recipe.id})">Edit</button>
             <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #a08060;">
                 ■ ${recipe.category.replace('-', ' ')}
@@ -50,29 +51,38 @@ function displayRecipes(filterCategory = 'all') {
     });
 }
 
-// NEW: 4. Prepare the form for an edit when the "Edit" button is clicked
+// 4. Prepare the form for an edit
 window.prepareEdit = function(id) {
-    // Find the specific recipe inside our array
     const recipeToEdit = recipeRolodex.find(r => r.id === id);
-    
     if (!recipeToEdit) return;
 
-    // Pull the recipe data back up into the input fields
     textInput.value = recipeToEdit.text;
     categorySelect.value = recipeToEdit.category;
-    
-    // Keep its existing image intact in case they don't upload a new one
     currentUploadedImageBase64 = recipeToEdit.image || "";
 
-    // Switch the mode from "new" to "editing" and change button text
     editingRecipeId = id;
     saveBtn.innerText = "Update Vintage Card";
-    
-    // Scroll smoothly to the top input box so the user knows it's ready to change
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// 5. Handle saving a recipe (Handles BOTH new creations and edits!)
+// NEW: 5. Delete a recipe permanently from the list
+window.deleteRecipe = function(id) {
+    // Ask the user for confirmation so they don't click by mistake
+    const confirmDelete = confirm("Are you sure you want to discard this recipe card from Grandma's box?");
+    
+    if (confirmDelete) {
+        // Filter out the recipe that matches the clicked ID
+        recipeRolodex = recipeRolodex.filter(recipe => recipe.id !== id);
+        
+        // Save the shortened list back to localStorage
+        localStorage.setItem('myRecipes', JSON.stringify(recipeRolodex));
+        
+        // Refresh the page grid instantly
+        displayRecipes();
+    }
+};
+
+// 6. Handle saving a recipe (Handles BOTH new creations and edits!)
 saveBtn.addEventListener('click', () => {
     const recipeText = textInput.value.trim();
     const recipeCategory = categorySelect.value;
@@ -83,22 +93,15 @@ saveBtn.addEventListener('click', () => {
     }
 
     if (editingRecipeId !== null) {
-        // --- EDIT MODE ---
-        // Find the index of the recipe we are editing
         const index = recipeRolodex.findIndex(r => r.id === editingRecipeId);
-        
         if (index !== -1) {
-            // Update the existing recipe details
             recipeRolodex[index].text = recipeText;
             recipeRolodex[index].category = recipeCategory;
-            recipeRolodex[index].image = currentUploadedImageBase64; // Keeps old image OR links new one
+            recipeRolodex[index].image = currentUploadedImageBase64;
         }
-        
-        // Reset mode back to normal
         editingRecipeId = null;
         saveBtn.innerText = "Save Vintage Card";
     } else {
-        // --- NEW CARD MODE ---
         const newRecipe = {
             text: recipeText,
             category: recipeCategory,
@@ -108,14 +111,13 @@ saveBtn.addEventListener('click', () => {
         recipeRolodex.push(newRecipe);
     }
 
-    // Save changes to localStorage and refresh display
     localStorage.setItem('myRecipes', JSON.stringify(recipeRolodex));
     textInput.value = '';
     currentUploadedImageBase64 = "";
     displayRecipes();
 });
 
-// 6. Handle Category Heading Cards filtering
+// 7. Handle Category Heading Cards filtering
 headingCards.forEach(card => {
     card.addEventListener('click', () => {
         const selectedCategory = card.getAttribute('data-category');
@@ -123,7 +125,7 @@ headingCards.forEach(card => {
     });
 });
 
-// 7. SCREENSHOT OCR PARSING & IMAGE CAPTURE
+// 8. SCREENSHOT OCR PARSING & IMAGE CAPTURE
 imageUpload.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (!file) return;
