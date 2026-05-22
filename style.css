@@ -1,12 +1,12 @@
 /* Mid-Century Color Palette & Background Texture */
 body {
-    background-color: #f4ebd4; /* Muted parchment cream */
-    color: #4a3c31; /* Deep cocoa brown instead of harsh pure black */
+    background-color: #f2ebd4; /* Muted parchment cream */
+    color: #4a3c31; /* Deep cocoa brown text */
     font-family: 'Courier New', Courier, monospace; /* Classic typewriter font */
     margin: 0;
     padding: 30px;
     
-    /* Simulating random coffee/grease stains using radial gradients */
+    /* Random coffee/grease stains using radial gradients */
     background-image: 
         radial-gradient(circle, rgba(139, 94, 60, 0.12) 15%, transparent 16%),
         radial-gradient(circle, rgba(139, 94, 60, 0.08) 8%, transparent 9%);
@@ -34,7 +34,7 @@ header h1 {
     border: 3px solid #4a3c31;
     padding: 20px;
     max-width: 700px;
-    margin: 0 auto 40px auto;
+    margin: 0 auto 50px auto;
     box-shadow: 6px 6px 0px #4a3c31; /* Flat 1960s graphic shadow */
 }
 
@@ -52,13 +52,6 @@ textarea {
     border: 2px solid #4a3c31;
     padding: 10px;
     font-family: inherit;
-}
-
-.upload-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    justify-content: center;
 }
 
 /* Custom Buttons styling */
@@ -80,88 +73,108 @@ button:hover, .custom-file-upload:hover {
 }
 
 input[type="file"] {
-    display: none; /* Hide the ugly default browser file input button */
+    display: none; 
 }
 
-/* Heading Cards Navigation Grid */
+/* -------------------------------------------
+   THE PHYSICAL RECIPE BOX TRANSLATION
+   ------------------------------------------- */
+
+/* The Category Container - acting like a box drawer */
 #category-nav {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 15px;
-    margin-bottom: 50px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 30px;
+    border-bottom: 4px solid #4a3c31; /* The "lip" of the wooden box */
+    padding-bottom: 0;
 }
 
+/* Heading Cards styled like physical filing folder tabs */
 .heading-card {
-    background-color: #e6dfcb;
+    background-color: #dcd1bd;
     border: 2px solid #4a3c31;
-    border-radius: 8px;
+    border-bottom: none; /* Merges into the box bottom line */
+    border-radius: 12px 12px 0 0; /* Rounded top tab look */
     text-align: center;
-    padding: 15px;
+    padding: 10px 20px;
     cursor: pointer;
-    transition: transform 0.2s;
-    box-shadow: 4px 4px 0px #4a3c31;
+    transition: background-color 0.2s, transform 0.2s;
+    font-weight: bold;
 }
 
 .heading-card:hover {
-    transform: translateY(-4px);
-    background-color: #dfb15b; /* Harvest Gold highlight */
+    background-color: #dfb15b; /* Harvest Gold active tab */
+    transform: translateY(-2px);
 }
 
-/* Individual Recipe Card Box (Where JavaScript items go) */
+/* Recipe Card Grid */
 #recipe-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
 }
 
+/* Individual Recipe Cards styled like Lined Index Cards */
 .recipe-card {
-    background-color: #fffdf9; /* Classic index card color */
+    background-color: #fffdf9; 
     border: 1px solid #d4c8b3;
-    border-top: 16px solid #c76d3c; /* Top colored filing tab style */
-    padding: 20px;
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.08);
+    border-top: 20px solid #c76d3c; /* Top colored filing assignment */
+    padding: 30px 20px 20px 40px; /* Extra left padding for the margin line */
+    box-shadow: 5px 5px 0px rgba(74, 60, 49, 0.15); /* Solid retro shadow */
     position: relative;
+
+    /* Creating the blue notebook paper lines dynamically */
+    background-image: linear-gradient(#e1effa 1px, transparent 1px);
+    background-size: 100% 24px; /* Space between lines */
+    line-height: 24px; /* Matches the line spacing perfectly */
 }
 
-/* Fake grease drop on every dynamic recipe card */
+/* The vertical red margin line found on index cards */
+.recipe-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 30px; /* Placed cleanly inside the card */
+    width: 1px;
+    height: 100%;
+    background-color: #ff9999; /* Soft red margin line */
+}
+
+/* The random grease spot stain */
 .recipe-card::after {
     content: '';
     position: absolute;
     bottom: 15px;
     right: 20px;
-    width: 14px;
-    height: 12px;
-    background-color: rgba(139, 94, 60, 0.25);
-    border-radius: 50% 40% 60% 30%;
-    filter: blur(0.5px);
+    width: 25px;
+    height: 18px;
+    background-color: rgba(139, 94, 60, 0.18);
+    border-radius: 40% 60% 30% 70%;
+    filter: blur(1px);
+    pointer-events: none; /* Stops it from blocking text clicks */
 }
 
-/* Styling for images inside the recipe cards */
+/* Image placement inside index cards */
 .recipe-card-img {
     width: 100%;
-    max-height: 200px;
-    object-fit: cover; /* Crops nicely without stretching */
-    border: 2px dashed #4a3c31;
+    max-height: 180px;
+    object-fit: cover;
+    border: 1px dashed #4a3c31;
     margin-top: 15px;
-    background-color: #fcf8ee;
-    /* Slight sepia tint to match the old-timey aesthetic */
-    filter: sepia(0.3) contrast(0.9); 
+    filter: sepia(0.4) contrast(0.85); /* Gives photos an instantly aged look */
 }
 
-/* Edit button placement inside the recipe card */
+/* Small edit button position */
 .edit-btn {
-    background-color: #e6dfcb;
+    background-color: #fffdf9;
     border: 1px solid #4a3c31;
     color: #4a3c31;
-    padding: 3px 8px;
-    font-size: 0.75rem;
+    padding: 2px 6px;
+    font-size: 0.7rem;
     cursor: pointer;
     position: absolute;
-    top: 10px;
+    top: -15px; /* Floats right inside the colored upper tab */
     right: 10px;
-    box-shadow: 1px 1px 0px #4a3c31;
-}
-
-.edit-btn:hover {
-    background-color: #dfb15b; /* Gold on hover */
+    z-index: 10;
 }
