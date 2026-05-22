@@ -33,7 +33,8 @@ header h1 {
     background-color: #fffbf2;
     border: 3px solid #4a3c31;
     padding: 20px;
-    max-width: 700px;
+    max-width: 900px;
+    width: 95%;
     margin: 0 auto 50px auto;
     box-shadow: 6px 6px 0px #4a3c31; /* Flat 1960s graphic shadow */
 }
@@ -47,11 +48,14 @@ header h1 {
 textarea {
     flex: 1;
     min-width: 250px;
-    height: 120px;
+    height: 250px;
     background-color: #fbf7ed;
     border: 2px solid #4a3c31;
-    padding: 10px;
+    padding: 15px;
     font-family: inherit;
+    /* NEW: Enables manual dragging/resizing in both directions */
+    resize: both; 
+    overflow: auto; /* Ensures scrollbars appear nicely if content overflows */
 }
 
 /* Custom Buttons styling */
