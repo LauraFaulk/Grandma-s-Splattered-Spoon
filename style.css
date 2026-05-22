@@ -135,3 +135,15 @@ input[type="file"] {
     border-radius: 50% 40% 60% 30%;
     filter: blur(0.5px);
 }
+
+/* Styling for images inside the recipe cards */
+.recipe-card-img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover; /* Crops nicely without stretching */
+    border: 2px dashed #4a3c31;
+    margin-top: 15px;
+    background-color: #fcf8ee;
+    /* Slight sepia tint to match the old-timey aesthetic */
+    filter: sepia(0.3) contrast(0.9); 
+}
