@@ -1,0 +1,137 @@
+/* Mid-Century Color Palette & Background Texture */
+body {
+    background-color: #f4ebd4; /* Muted parchment cream */
+    color: #4a3c31; /* Deep cocoa brown instead of harsh pure black */
+    font-family: 'Courier New', Courier, monospace; /* Classic typewriter font */
+    margin: 0;
+    padding: 30px;
+    
+    /* Simulating random coffee/grease stains using radial gradients */
+    background-image: 
+        radial-gradient(circle, rgba(139, 94, 60, 0.12) 15%, transparent 16%),
+        radial-gradient(circle, rgba(139, 94, 60, 0.08) 8%, transparent 9%);
+    background-size: 400px 400px, 550px 550px;
+    background-position: 30px 40px, 200px 300px;
+}
+
+header {
+    text-align: center;
+    border-bottom: 5px dashed #8ba88f; /* Vintage Avocado Green */
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    font-size: 3.5rem;
+    color: #c76d3c; /* Mid-century Burnt Orange */
+    margin: 0;
+    text-shadow: 2px 2px 0px #dfb15b; /* Retro gold pop shadow */
+}
+
+/* Input Form Styling */
+#recipe-input-zone {
+    background-color: #fffbf2;
+    border: 3px solid #4a3c31;
+    padding: 20px;
+    max-width: 700px;
+    margin: 0 auto 40px auto;
+    box-shadow: 6px 6px 0px #4a3c31; /* Flat 1960s graphic shadow */
+}
+
+.input-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+textarea {
+    flex: 1;
+    min-width: 250px;
+    height: 120px;
+    background-color: #fbf7ed;
+    border: 2px solid #4a3c31;
+    padding: 10px;
+    font-family: inherit;
+}
+
+.upload-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* Custom Buttons styling */
+button, .custom-file-upload, select {
+    background-color: #dfb15b; /* Harvest Gold */
+    border: 2px solid #4a3c31;
+    color: #4a3c31;
+    padding: 10px 15px;
+    font-weight: bold;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 3px 3px 0px #4a3c31;
+}
+
+button:hover, .custom-file-upload:hover {
+    background-color: #8ba88f; /* Avocado Green */
+    color: white;
+}
+
+input[type="file"] {
+    display: none; /* Hide the ugly default browser file input button */
+}
+
+/* Heading Cards Navigation Grid */
+#category-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 50px;
+}
+
+.heading-card {
+    background-color: #e6dfcb;
+    border: 2px solid #4a3c31;
+    border-radius: 8px;
+    text-align: center;
+    padding: 15px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: 4px 4px 0px #4a3c31;
+}
+
+.heading-card:hover {
+    transform: translateY(-4px);
+    background-color: #dfb15b; /* Harvest Gold highlight */
+}
+
+/* Individual Recipe Card Box (Where JavaScript items go) */
+#recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.recipe-card {
+    background-color: #fffdf9; /* Classic index card color */
+    border: 1px solid #d4c8b3;
+    border-top: 16px solid #c76d3c; /* Top colored filing tab style */
+    padding: 20px;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.08);
+    position: relative;
+}
+
+/* Fake grease drop on every dynamic recipe card */
+.recipe-card::after {
+    content: '';
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    width: 14px;
+    height: 12px;
+    background-color: rgba(139, 94, 60, 0.25);
+    border-radius: 50% 40% 60% 30%;
+    filter: blur(0.5px);
+}

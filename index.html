@@ -1,1 +1,66 @@
-<h1>The Splattered Spoon</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grandma's Splattered Spoon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>The Splattered Spoon</h1>
+        <p>A digital home for Grandma's well-loved recipes</p>
+    </header>
+
+    <section id="recipe-input-zone">
+        <h2>Add to the Rolodex</h2>
+        <div class="input-group">
+            <textarea id="text-input" placeholder="Paste your recipe ingredients and directions here..."></textarea>
+            
+            <div class="upload-controls">
+                <label for="image-upload" class="custom-file-upload">
+                    📸 Upload Recipe Screenshot
+                </label>
+                <input type="file" id="image-upload" accept="image/*">
+                
+                <select id="category-select">
+                    <option value="chicken">🍗 Chicken</option>
+                    <option value="beef">🥩 Beef</option>
+                    <option value="baked-goods">🍞 Baked Goods</option>
+                    <option value="desserts">🍰 Desserts</option>
+                    <option value="drinks">🍹 Drinks</option>
+                </select>
+
+                <button id="save-btn">Save Vintage Card</button>
+            </div>
+        </div>
+    </section>
+
+    <nav id="category-nav">
+        <div class="heading-card" data-category="all">
+            <h3>All Recipes</h3>
+        </div>
+        <div class="heading-card" data-category="chicken">
+            <h3>🍗 Chicken</h3>
+        </div>
+        <div class="heading-card" data-category="beef">
+            <h3>🥩 Beef</h3>
+        </div>
+        <div class="heading-card" data-category="baked-goods">
+            <h3>🍞 Baked Goods</h3>
+        </div>
+        <div class="heading-card" data-category="desserts">
+            <h3>🍰 Desserts</h3>
+        </div>
+        <div class="heading-card" data-category="drinks">
+            <h3>🍹 Drinks</h3>
+        </div>
+    </nav>
+
+    <main id="recipe-grid">
+        </main>
+
+    <script src="app.js"></script>
+</body>
+</html><h1>The Splattered Spoon</h1>
