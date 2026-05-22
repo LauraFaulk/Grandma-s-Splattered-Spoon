@@ -178,3 +178,29 @@ input[type="file"] {
     right: 10px;
     z-index: 10;
 }
+
+/* Evenly space the controls inside the input box */
+.upload-controls {
+    display: flex;
+    flex-direction: row; /* Lines them up side-by-side horizontally */
+    justify-content: space-between; /* Spaces them perfectly even from edge to edge */
+    align-items: center; /* Aligns their centers perfectly straight */
+    gap: 15px; /* Ensures they never bump into each other on smaller screens */
+    width: 100%; /* Makes sure it stretches across the whole box */
+    margin-top: 15px;
+}
+
+/* Make sure the input fields stretch nicely to share the space */
+.custom-file-upload, #category-select, #save-btn {
+    flex: 1; /* Forces all three elements to be the exact same width */
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Adjust the group layout so the text area sits on top, and controls sit on bottom */
+.input-group {
+    display: flex;
+    flex-direction: column; /* Stack text box on top, buttons on bottom */
+    gap: 15px;
+    width: 100%;
+}
