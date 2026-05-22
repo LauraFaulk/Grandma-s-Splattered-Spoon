@@ -77,3 +77,48 @@ headingCards.forEach(card => {
 
 // 6. Run this automatically when the page first loads up
 displayRecipes();
+
+// ==========================================
+// 7. SCREENSHOT OCR PARSING (Tesseract.js)
+// ==========================================
+
+const imageUpload = document.getElementById('image-upload');
+
+imageUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    
+    if (!file) return;
+
+    // 1. Give the user a hint that Grandma's gears are turning
+    textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
+    saveBtn.disabled = true; // Temporary disable button while processing
+    saveBtn.innerText = "Scanning...";
+
+    // 2. Use a FileReader to convert the uploaded image into something Tesseract can read
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    
+    reader.onload = function() {
+        const imageDataUrl = reader.result;
+
+        // 3. Call Tesseract to recognize the text inside the image
+        Tesseract.recognize(
+            imageDataUrl,
+            'eng', // Language code for English
+            { logger: m => console.log(m) } // This logs the progress in your browser inspect console
+        ).then(({ data: { text } }) => {
+            
+            // 4. Put the scanned text straight into your recipe text box!
+            textInput.value = text;
+            
+            // 5. Reset our button back to normal
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Save Vintage Card";
+        }).catch(error => {
+            console.error("OCR Error: ", error);
+            textInput.value = "Oh dear, something went wrong scanning that image. Try pasting manually!";
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Save Vintage Card";
+        });
+    };
+});
