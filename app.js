@@ -3,8 +3,12 @@ const textInput = document.getElementById('text-input');
 const categorySelect = document.getElementById('category-select');
 const saveBtn = document.getElementById('save-btn');
 const recipeGrid = document.getElementById('recipe-grid');
-const headingCards = document.querySelectorAll('.heading-card');
+const categoryNav = document.getElementById('category-nav');
 const imageUpload = document.getElementById('image-upload');
+
+// NEW: Elements for custom categories
+const newCategoryInput = document.getElementById('new-category-input');
+const addCategoryBtn = document.getElementById('add-category-btn');
 
 // Temporary storage for image uploads
 let currentUploadedImageBase64 = "";
@@ -12,10 +16,48 @@ let currentUploadedImageBase64 = "";
 // Tracks if we are editing an existing recipe
 let editingRecipeId = null;
 
-// 2. Load existing recipes from localStorage
+// 2. Load existing data from localStorage (or defaults if empty)
 let recipeRolodex = JSON.parse(localStorage.getItem('myRecipes')) || [];
+let customCategories = JSON.parse(localStorage.getItem('myCategories')) || ['chicken', 'beef', 'baked-goods', 'desserts', 'drinks'];
 
-// 3. Function to draw/render the recipe cards onto the screen
+// NEW: 3. Function to draw the physical filing folder tabs dynamically
+function displayCategoryTabs() {
+    // Clear out the navigation box drawer, except for the "All" tab
+    categoryNav.innerHTML = '<div class="heading-card" data-category="all">All</div>';
+    
+    // Clear the dropdown select box too
+    categorySelect.innerHTML = '';
+
+    // Emojis mapping for default categories to keep it retro-pretty
+    const emojiMap = {
+        'chicken': '🍗 Chicken', 'beef': '🥩 Beef', 'baked-goods': '🍞 Baking', 'desserts': '🍰 Sweets', 'drinks': '🍹 Drinks'
+    };
+
+    customCategories.forEach(cat => {
+        const displayName = emojiMap[cat] || `📁 ${cat.replace('-', ' ')}`;
+
+        // A. Add tab to top navigation
+        const tab = document.createElement('div');
+        tab.classList.add('heading-card');
+        tab.setAttribute('data-category', cat);
+        tab.innerText = displayName;
+        
+        // Wire up click event for filtering
+        tab.addEventListener('click', () => displayRecipes(cat));
+        categoryNav.appendChild(tab);
+
+        // B. Add option to the submission dropdown menu
+        const option = document.createElement('option');
+        option.value = cat;
+        option.innerText = displayName;
+        categorySelect.appendChild(option);
+    });
+
+    // Make sure clicking the 'All' tab works too
+    document.querySelector('.heading-card[data-category="all"]').addEventListener('click', () => displayRecipes('all'));
+}
+
+// 4. Function to draw/render the recipe cards onto the screen
 function displayRecipes(filterCategory = 'all') {
     recipeGrid.innerHTML = '';
 
@@ -27,12 +69,11 @@ function displayRecipes(filterCategory = 'all') {
         const card = document.createElement('div');
         card.classList.add('recipe-card');
         
-        // Match the border color of the card tab to its mid-century theme
-        if (recipe.category === 'chicken') card.style.borderTopColor = '#8ba88f';
-        if (recipe.category === 'baked-goods') card.style.borderTopColor = '#dfb15b';
-        if (recipe.category === 'drinks') card.style.borderTopColor = '#6b8e93';
+        // Dynamically rotate tab border colors for variety
+        const hash = recipe.category.charCodeAt(0) || 0;
+        const colors = ['#8ba88f', '#dfb15b', '#6b8e93', '#c76d3c'];
+        card.style.borderTopColor = colors[hash % colors.length];
 
-        // NEW: Included the Delete button next to the Edit button in the string template
         let cardHTML = `
             <button class="delete-btn" onclick="deleteRecipe(${recipe.id})">Delete</button>
             <button class="edit-btn" onclick="prepareEdit(${recipe.id})">Edit</button>
@@ -51,7 +92,26 @@ function displayRecipes(filterCategory = 'all') {
     });
 }
 
-// 4. Prepare the form for an edit
+// NEW: 5. Handle adding a brand new custom folder tab category
+addCategoryBtn.addEventListener('click', () => {
+    const rawName = newCategoryInput.value.trim();
+    // Turn "Appetizers & Snacks" into "appetizers-&-snacks" for code safety
+    const cleanId = rawName.toLowerCase().replace(/\s+/g, '-'); 
+
+    if (rawName === '') return;
+    if (customCategories.includes(cleanId)) {
+        alert("That folder tab already exists inside your box!");
+        return;
+    }
+
+    customCategories.push(cleanId);
+    localStorage.setItem('myCategories', JSON.stringify(customCategories));
+    
+    newCategoryInput.value = '';
+    displayCategoryTabs(); // Redraw the UI tabs instantly
+});
+
+// 6. Prepare the form for an edit
 window.prepareEdit = function(id) {
     const recipeToEdit = recipeRolodex.find(r => r.id === id);
     if (!recipeToEdit) return;
@@ -65,24 +125,17 @@ window.prepareEdit = function(id) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// NEW: 5. Delete a recipe permanently from the list
+// 7. Delete a recipe permanently
 window.deleteRecipe = function(id) {
-    // Ask the user for confirmation so they don't click by mistake
     const confirmDelete = confirm("Are you sure you want to discard this recipe card from Grandma's box?");
-    
     if (confirmDelete) {
-        // Filter out the recipe that matches the clicked ID
         recipeRolodex = recipeRolodex.filter(recipe => recipe.id !== id);
-        
-        // Save the shortened list back to localStorage
         localStorage.setItem('myRecipes', JSON.stringify(recipeRolodex));
-        
-        // Refresh the page grid instantly
         displayRecipes();
     }
 };
 
-// 6. Handle saving a recipe (Handles BOTH new creations and edits!)
+// 8. Handle saving a recipe
 saveBtn.addEventListener('click', () => {
     const recipeText = textInput.value.trim();
     const recipeCategory = categorySelect.value;
@@ -117,60 +170,39 @@ saveBtn.addEventListener('click', () => {
     displayRecipes();
 });
 
-// 7. Handle Category Heading Cards filtering
-headingCards.forEach(card => {
-    card.addEventListener('click', () => {
-        const selectedCategory = card.getAttribute('data-category');
-        displayRecipes(selectedCategory);
-    });
+// 9. SCREENSHOT OCR PARSING & IMAGE CAPTURE
+imageUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
+    saveBtn.disabled = true;
+    saveBtn.innerText = "Scanning Image...";
+
+    const reader = new FileReader();
+    
+    reader.onload = function() {
+        currentUploadedImageBase64 = reader.result;
+
+        Tesseract.recognize(
+            currentUploadedImageBase64,
+            'eng',
+            { logger: m => console.log(m) }
+        ).then(({ data: { text } }) => {
+            textInput.value = text;
+            saveBtn.disabled = false;
+            saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
+        }).catch(error => {
+            console.error("Tesseract Core Error: ", error);
+            textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
+            saveBtn.disabled = false;
+            saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
+        });
+    };
+
+    reader.readAsDataURL(file);
 });
 
-// 8. SCREENSHOT OCR PARSING & IMAGE CAPTURE (Optimized)
-if (imageUpload) {
-    imageUpload.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        console.log("File selected:", file.name);
-
-        // 1. Instantly alert the user that Grandma's gears are turning
-        textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
-        saveBtn.disabled = true;
-        saveBtn.innerText = "Scanning Image...";
-
-        const reader = new FileReader();
-        
-        // 2. Read the file FIRST to capture the image string securely
-        reader.onload = function() {
-            console.log("Image successfully converted and saved temporarily.");
-            currentUploadedImageBase64 = reader.result;
-
-            // 3. ONLY after the image is safely captured do we run Tesseract
-            Tesseract.recognize(
-                currentUploadedImageBase64,
-                'eng',
-                { logger: m => console.log(m) }
-            ).then(({ data: { text } }) => {
-                console.log("OCR scanning complete!");
-                
-                // Put the scanned text into the box
-                textInput.value = text;
-                
-                // Unlock the save button now that BOTH text and image are ready
-                saveBtn.disabled = false;
-                saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-            }).catch(error => {
-                console.error("Tesseract Core Error: ", error);
-                textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
-                saveBtn.disabled = false;
-                saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-            });
-        };
-
-        // Trigger the file read
-        reader.readAsDataURL(file);
-    });
-}
-
-// Run automatically on load
+// Setup both elements automatically on load
+displayCategoryTabs();
 displayRecipes();

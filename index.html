@@ -23,8 +23,13 @@
                     📸 Upload Recipe Screenshot
                 </label>
                 <input type="file" id="image-upload" accept="image/*">
+ 
+		<div class="category-creator" style="display: flex; gap: 5px; width: 100%;">
+                    <input type="text" id="new-category-input" placeholder="New category name..." style="flex: 1; padding: 5px; font-family: inherit; border: 2px solid #4a3c31; background: #fbf7ed;">
+                    <button id="add-category-btn" type="button" style="padding: 5px 10px; font-size: 0.8rem;">+ Add Tab</button>
+                </div>               
                 
-                <select id="category-select">
+		<select id="category-select">
                     <option value="chicken">🍗 Chicken</option>
                     <option value="beef">🥩 Beef</option>
                     <option value="baked-goods">🍞 Baked Goods</option>
