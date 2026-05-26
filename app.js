@@ -6,58 +6,106 @@ const recipeGrid = document.getElementById('recipe-grid');
 const categoryNav = document.getElementById('category-nav');
 const imageUpload = document.getElementById('image-upload');
 
-// NEW: Elements for custom categories
+// Category creation & editing elements
 const newCategoryInput = document.getElementById('new-category-input');
 const addCategoryBtn = document.getElementById('add-category-btn');
+const tabEditorZone = document.getElementById('tab-editor-zone');
+const editCategoryInput = document.getElementById('edit-category-input');
+const updateCategoryBtn = document.getElementById('update-category-btn');
+const cancelCategoryBtn = document.getElementById('cancel-category-btn');
 
-// Temporary storage for image uploads
+// Temporary storage trackers
 let currentUploadedImageBase64 = "";
-
-// Tracks if we are editing an existing recipe
 let editingRecipeId = null;
+let editingCategoryId = null; 
 
-// 2. Load existing data from localStorage (or defaults if empty)
+// 2. Load existing data safely from localStorage
 let recipeRolodex = JSON.parse(localStorage.getItem('myRecipes')) || [];
-let customCategories = JSON.parse(localStorage.getItem('myCategories')) || ['chicken', 'beef', 'baked-goods', 'desserts', 'drinks'];
 
-// NEW: 3. Function to draw the physical filing folder tabs dynamically
+const defaultCategories = [
+    { id: 'chicken', name: '🍗 Chicken' },
+    { id: 'beef', name: '🥩 Beef' },
+    { id: 'baked-goods', name: '🍞 Baking' },
+    { id: 'desserts', name: '🍰 Sweets' },
+    { id: 'drinks', name: '🍹 Drinks' }
+];
+let customCategories = JSON.parse(localStorage.getItem('myCategoriesObjects')) || defaultCategories;
+
+// 3. Draw the physical filing folder tabs dynamically
 function displayCategoryTabs() {
-    // Clear out the navigation box drawer, except for the "All" tab
-    categoryNav.innerHTML = '<div class="heading-card" data-category="all">All</div>';
-    
-    // Clear the dropdown select box too
+    // Clear out navigation drawer, leaving just the static "All" master tab
+    categoryNav.innerHTML = '<div class="heading-card" data-category="all" style="background-color: #4a3c31; color: #fffdf9;">All Recipes</div>';
     categorySelect.innerHTML = '';
 
-    // Emojis mapping for default categories to keep it retro-pretty
-    const emojiMap = {
-        'chicken': '🍗 Chicken', 'beef': '🥩 Beef', 'baked-goods': '🍞 Baking', 'desserts': '🍰 Sweets', 'drinks': '🍹 Drinks'
-    };
-
     customCategories.forEach(cat => {
-        const displayName = emojiMap[cat] || `📁 ${cat.replace('-', ' ')}`;
-
-        // A. Add tab to top navigation
+        // Add tab to top navigation box grid
         const tab = document.createElement('div');
         tab.classList.add('heading-card');
-        tab.setAttribute('data-category', cat);
-        tab.innerText = displayName;
+        tab.setAttribute('data-category', cat.id);
         
-        // Wire up click event for filtering
-        tab.addEventListener('click', () => displayRecipes(cat));
+        // Render tab with a clean click notice
+        tab.innerHTML = `${cat.name} <span style="font-size:0.65rem; color:#a08060; display:block; margin-top:2px; font-weight:normal;">[Click to Filter / Double-Click to Edit Name]</span>`;
+        
+        // SINGLE CLICK: Filters the recipes
+        tab.addEventListener('click', (e) => {
+            displayRecipes(cat.id);
+        });
+
+        // DOUBLE CLICK: Instantly opens the category renamer tool!
+        tab.addEventListener('dblclick', () => {
+            prepareCategoryEdit(cat.id, cat.name);
+        });
+
         categoryNav.appendChild(tab);
 
-        // B. Add option to the submission dropdown menu
+        // Add options to submission dropdown menu
         const option = document.createElement('option');
-        option.value = cat;
-        option.innerText = displayName;
+        option.value = cat.id;
+        option.innerText = cat.name;
         categorySelect.appendChild(option);
     });
 
-    // Make sure clicking the 'All' tab works too
+    // Wire master selection trigger to static 'All' link
     document.querySelector('.heading-card[data-category="all"]').addEventListener('click', () => displayRecipes('all'));
 }
 
-// 4. Function to draw/render the recipe cards onto the screen
+// 4. Function to open the category renamer tool
+function prepareCategoryEdit(id, currentName) {
+    const systemIds = ['chicken', 'beef', 'baked-goods', 'desserts', 'drinks'];
+    if (systemIds.includes(id)) {
+        alert("Grandma's core default folders can't be renamed, but you can edit any custom tabs you created!");
+        return;
+    }
+    editingCategoryId = id;
+    editCategoryInput.value = currentName;
+    tabEditorZone.style.display = 'flex';
+    editCategoryInput.focus();
+}
+
+// Handle updating a custom tab name
+updateCategoryBtn.addEventListener('click', () => {
+    const updatedName = editCategoryInput.value.trim();
+    if (updatedName === '') return;
+
+    const index = customCategories.findIndex(c => c.id === editingCategoryId);
+    if (index !== -1) {
+        customCategories[index].name = updatedName; // Updates name with exact capitals/emojis
+        localStorage.setItem('myCategoriesObjects', JSON.stringify(customCategories));
+        
+        tabEditorZone.style.display = 'none';
+        editingCategoryId = null;
+        
+        displayCategoryTabs();
+        displayRecipes(); 
+    }
+});
+
+cancelCategoryBtn.addEventListener('click', () => {
+    tabEditorZone.style.display = 'none';
+    editingCategoryId = null;
+});
+
+// 5. Function to draw/render the recipe cards onto the screen
 function displayRecipes(filterCategory = 'all') {
     recipeGrid.innerHTML = '';
 
@@ -69,81 +117,77 @@ function displayRecipes(filterCategory = 'all') {
         const card = document.createElement('div');
         card.classList.add('recipe-card');
         
-        // Dynamically rotate tab border colors for variety
+        // TRANSLATION LAYER: Find matching display name or fallback gracefully
+        const matchingCat = customCategories.find(c => c.id === recipe.category);
+        const printableCategoryName = matchingCat ? matchingCat.name : recipe.category.toUpperCase().replace('-', ' ');
+
         const hash = recipe.category.charCodeAt(0) || 0;
         const colors = ['#8ba88f', '#dfb15b', '#6b8e93', '#c76d3c'];
         card.style.borderTopColor = colors[hash % colors.length];
 
-        let cardHTML = `
+        card.innerHTML = `
             <button class="delete-btn" onclick="deleteRecipe(${recipe.id})">Delete</button>
             <button class="edit-btn" onclick="prepareEdit(${recipe.id})">Edit</button>
-            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #a08060;">
-                ■ ${recipe.category.replace('-', ' ')}
+            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #a08060; font-weight:bold;">
+                ■ ${printableCategoryName}
             </span>
             <p style="white-space: pre-wrap; margin-top: 10px;">${recipe.text}</p>
         `;
 
         if (recipe.image) {
-            cardHTML += `<img src="${recipe.image}" class="recipe-card-img" alt="Recipe clipping">`;
+            const imgElement = document.createElement('img');
+            imgElement.src = recipe.image;
+            imgElement.classList.add('recipe-card-img');
+            imgElement.alt = "Recipe clipping";
+            card.appendChild(imgElement);
         }
 
-        card.innerHTML = cardHTML;
         recipeGrid.appendChild(card);
     });
 }
 
-// NEW: 5. Handle adding a brand new custom folder tab category
-addCategoryBtn.addEventListener('click', () => {
-    const rawName = newCategoryInput.value.trim();
-    // Turn "Appetizers & Snacks" into "appetizers-&-snacks" for code safety
-    const cleanId = rawName.toLowerCase().replace(/\s+/g, '-'); 
-
-    if (rawName === '') return;
-    if (customCategories.includes(cleanId)) {
-        alert("That folder tab already exists inside your box!");
-        return;
-    }
-
-    customCategories.push(cleanId);
-    localStorage.setItem('myCategories', JSON.stringify(customCategories));
-    
-    newCategoryInput.value = '';
-    displayCategoryTabs(); // Redraw the UI tabs instantly
-});
-
 // 6. Handle adding a brand new custom folder tab category
 addCategoryBtn.addEventListener('click', () => {
     const originalName = newCategoryInput.value.trim();
+    if (originalName === '') return;
+
     const uniqueId = originalName.toLowerCase().replace(/\s+/g, '-'); 
 
-    if (originalName === '') return;
-    
-    // Safety check to ensure we don't duplicate computer IDs
     if (customCategories.some(c => c.id === uniqueId)) {
         alert("A tab with that name already exists!");
         return;
     }
 
-    // Save as an object to hold onto your specific capitalization structure!
-    const newTabObject = {
-        id: uniqueId,
-        name: originalName
-    };
-
+    const newTabObject = { id: uniqueId, name: originalName };
     customCategories.push(newTabObject);
     localStorage.setItem('myCategoriesObjects', JSON.stringify(customCategories));
     
     newCategoryInput.value = '';
-    
-    // Redraw the tabs so the new one appears on screen instantly
     displayCategoryTabs(); 
-
-    // NEW: Auto-select this brand new category in the dropdown menu 
-    // This makes it seamless if you are editing a card and want to put it here!
-    categorySelect.value = uniqueId;
+    categorySelect.value = uniqueId; // Auto-selects newly created dropdown category
 });
 
-// 7. Delete a recipe permanently
+// 7. Prepare the form for an edit (FIXED AND STABILIZED)
+window.prepareEdit = function(id) {
+    const recipeToEdit = recipeRolodex.find(r => r.id === id);
+    if (!recipeToEdit) return;
+
+    textInput.value = recipeToEdit.text;
+    
+    // Check if the recipe's category exists in our dropdown selections
+    if (customCategories.some(c => c.id === recipeToEdit.category)) {
+        categorySelect.value = recipeToEdit.category;
+    } else {
+        categorySelect.selectedIndex = 0; // Safe fallback if legacy string mismatch exists
+    }
+    
+    currentUploadedImageBase64 = recipeToEdit.image || "";
+    editingRecipeId = id;
+    saveBtn.innerText = "Update Vintage Card";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// 8. Delete a recipe permanently
 window.deleteRecipe = function(id) {
     const confirmDelete = confirm("Are you sure you want to discard this recipe card from Grandma's box?");
     if (confirmDelete) {
@@ -153,7 +197,7 @@ window.deleteRecipe = function(id) {
     }
 };
 
-// 8. Handle saving a recipe
+// 9. Handle saving a recipe
 saveBtn.addEventListener('click', () => {
     const recipeText = textInput.value.trim();
     const recipeCategory = categorySelect.value;
@@ -188,7 +232,7 @@ saveBtn.addEventListener('click', () => {
     displayRecipes();
 });
 
-// 9. SCREENSHOT OCR PARSING & IMAGE CAPTURE
+// 10. SCREENSHOT OCR PARSING & IMAGE CAPTURE
 imageUpload.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -221,6 +265,6 @@ imageUpload.addEventListener('change', (event) => {
     reader.readAsDataURL(file);
 });
 
-// Setup both elements automatically on load
+// Initialize elements
 displayCategoryTabs();
 displayRecipes();
