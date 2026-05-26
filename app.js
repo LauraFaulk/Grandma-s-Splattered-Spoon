@@ -125,37 +125,52 @@ headingCards.forEach(card => {
     });
 });
 
-// 8. SCREENSHOT OCR PARSING & IMAGE CAPTURE
-imageUpload.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+// 8. SCREENSHOT OCR PARSING & IMAGE CAPTURE (Optimized)
+if (imageUpload) {
+    imageUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
-    saveBtn.disabled = true;
-    saveBtn.innerText = "Scanning...";
+        console.log("File selected:", file.name);
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    
-    reader.onload = function() {
-        currentUploadedImageBase64 = reader.result;
+        // 1. Instantly alert the user that Grandma's gears are turning
+        textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Scanning Image...";
 
-        Tesseract.recognize(
-            currentUploadedImageBase64,
-            'eng',
-            { logger: m => console.log(m) }
-        ).then(({ data: { text } }) => {
-            textInput.value = text;
-            saveBtn.disabled = false;
-            saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-        }).catch(error => {
-            console.error("OCR Error: ", error);
-            textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
-            saveBtn.disabled = false;
-            saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-        });
-    };
-});
+        const reader = new FileReader();
+        
+        // 2. Read the file FIRST to capture the image string securely
+        reader.onload = function() {
+            console.log("Image successfully converted and saved temporarily.");
+            currentUploadedImageBase64 = reader.result;
+
+            // 3. ONLY after the image is safely captured do we run Tesseract
+            Tesseract.recognize(
+                currentUploadedImageBase64,
+                'eng',
+                { logger: m => console.log(m) }
+            ).then(({ data: { text } }) => {
+                console.log("OCR scanning complete!");
+                
+                // Put the scanned text into the box
+                textInput.value = text;
+                
+                // Unlock the save button now that BOTH text and image are ready
+                saveBtn.disabled = false;
+                saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
+            }).catch(error => {
+                console.error("Tesseract Core Error: ", error);
+                textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
+                saveBtn.disabled = false;
+                saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
+            });
+        };
+
+        // Trigger the file read
+        reader.readAsDataURL(file);
+    });
+}
 
 // Run automatically on load
 displayRecipes();
