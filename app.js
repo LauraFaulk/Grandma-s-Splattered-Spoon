@@ -228,9 +228,22 @@ saveBtn.addEventListener('click', () => {
 // 10. DUAL IMAGE HANDLERS (SCANNER VS PHOTO)
 // ==========================================
 
-// HANDLER A: The Text Scanner (Tesseract OCR)
+// HANDLER A: The Text Scanner (Tesseract OCR - Optimized for Speed)
 if (imageUpload) {
-    imageUpload.addEventListener('change', (event) => {
+    // 1. Create a persistent background worker immediately on page load
+    let worker = null;
+    
+    async function initOcr() {
+        try {
+            worker = await Tesseract.createWorker('eng');
+            console.log("OCR background engine fully warmed up and ready!");
+        } catch (e) {
+            console.error("Failed to pre-warm OCR engine:", e);
+        }
+    }
+    initOcr(); // Run it immediately!
+
+    imageUpload.addEventListener('change', async (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
@@ -239,21 +252,27 @@ if (imageUpload) {
         saveBtn.innerText = "Scanning Image...";
 
         const reader = new FileReader();
-        reader.onload = function() {
-            Tesseract.recognize(
-                reader.result,
-                'eng',
-                { logger: m => console.log(m) }
-            ).then(({ data: { text } }) => {
-                textInput.value = text;
+        reader.onload = async function() {
+            try {
+                // 2. Use the pre-warmed worker instead of spinning up a fresh instance
+                if (!worker) {
+                    // Fallback if worker wasn't ready yet
+                    const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
+                    textInput.value = text;
+                } else {
+                    const { data: { text } } = await worker.recognize(reader.result);
+                    textInput.value = text;
+                }
+                
                 saveBtn.disabled = false;
                 saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-            }).catch(error => {
+                console.log("OCR scanning complete!");
+            } catch (error) {
                 console.error("Tesseract Error: ", error);
                 textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
                 saveBtn.disabled = false;
                 saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-            });
+            }
         };
         reader.readAsDataURL(file);
     });
