@@ -17,15 +17,21 @@
         <h2>Add to the Rolodex</h2>
         <div class="input-group">
             <textarea id="text-input" placeholder="Paste your recipe ingredients and directions here..."></textarea>
-            
-<div class="upload-controls">
-                <label for="image-upload" class="custom-file-upload">
-                    📸 Upload Recipe Screenshot
+
+            <div class="upload-controls">
+
+                <label for="image-upload" class="custom-file-upload" style="background-color: #6b8e93; color: white;">
+                    🔍 Scan Text From Image
                 </label>
                 <input type="file" id="image-upload" accept="image/*">
 
+                <label for="card-photo-upload" class="custom-file-upload">
+                    🖼️ Add Card Photo
+                </label>
+                <input type="file" id="card-photo-upload" accept="image/*">
+
                 <select id="category-select">
-                    <option value="chicken">盒 Chicken</option>
+                    <option value="chicken">🍗 Chicken</option>
                     <option value="beef">🥩 Beef</option>
                     <option value="baked-goods">🍞 Baking</option>
                     <option value="desserts">🍰 Sweets</option>
@@ -46,22 +52,20 @@
                     <button id="update-category-btn" type="button" style="padding: 5px 10px; font-size: 0.8rem; background-color: #8ba88f; color: white;">Fix Tab</button>
                     <button id="cancel-category-btn" type="button" style="padding: 5px 10px; font-size: 0.8rem; background-color: #e6dfcb;">X</button>
                 </div>
-            </div> 
-        </div> 
-    </section>
+            </div> </div> </section>
 
     <nav id="category-nav">
         <div class="heading-card" data-category="all">All</div>
-        <div class="heading-card" data-category="chicken">盒 Chicken</div>
+        <div class="heading-card" data-category="chicken">🍗 Chicken</div>
         <div class="heading-card" data-category="beef">🥩 Beef</div>
         <div class="heading-card" data-category="baked-goods">🍞 Baking</div>
         <div class="heading-card" data-category="desserts">🍰 Sweets</div>
-        <div class="heading-card" data-category="drinks">🍹 Drinks</div>
+        <div class="heading-card" data-category="drinks">🍹 Drinks</nav>
     </nav>
 
     <main id="recipe-grid"></main>
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js](https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js)"></script>
     <script src="app.js"></script>
 </body>
 </html>

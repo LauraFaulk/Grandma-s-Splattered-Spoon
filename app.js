@@ -1,10 +1,11 @@
-// 1. Grab all the HTML elements we need
+// 1. Grab all the HTML elements we need (Updated with the new photo button!)
 const textInput = document.getElementById('text-input');
 const categorySelect = document.getElementById('category-select');
 const saveBtn = document.getElementById('save-btn');
 const recipeGrid = document.getElementById('recipe-grid');
 const categoryNav = document.getElementById('category-nav');
 const imageUpload = document.getElementById('image-upload');
+const cardPhotoUpload = document.getElementById('card-photo-upload'); // NEW!
 
 // Category creation & editing elements
 const newCategoryInput = document.getElementById('new-category-input');
@@ -33,39 +34,32 @@ let customCategories = JSON.parse(localStorage.getItem('myCategoriesObjects')) |
 
 // 3. Draw the physical filing folder tabs dynamically
 function displayCategoryTabs() {
-    // Clear out navigation drawer, leaving just the static "All" master tab
     categoryNav.innerHTML = '<div class="heading-card" data-category="all" style="background-color: #4a3c31; color: #fffdf9;">All Recipes</div>';
     categorySelect.innerHTML = '';
 
     customCategories.forEach(cat => {
-        // Add tab to top navigation box grid
         const tab = document.createElement('div');
         tab.classList.add('heading-card');
         tab.setAttribute('data-category', cat.id);
         
-        // Render tab with a clean click notice
         tab.innerHTML = `${cat.name} <span style="font-size:0.65rem; color:#a08060; display:block; margin-top:2px; font-weight:normal;">[Click to Filter / Double-Click to Edit Name]</span>`;
         
-        // SINGLE CLICK: Filters the recipes
-        tab.addEventListener('click', (e) => {
+        tab.addEventListener('click', () => {
             displayRecipes(cat.id);
         });
 
-        // DOUBLE CLICK: Instantly opens the category renamer tool!
         tab.addEventListener('dblclick', () => {
             prepareCategoryEdit(cat.id, cat.name);
         });
 
         categoryNav.appendChild(tab);
 
-        // Add options to submission dropdown menu
         const option = document.createElement('option');
         option.value = cat.id;
         option.innerText = cat.name;
         categorySelect.appendChild(option);
     });
 
-    // Wire master selection trigger to static 'All' link
     document.querySelector('.heading-card[data-category="all"]').addEventListener('click', () => displayRecipes('all'));
 }
 
@@ -89,7 +83,7 @@ updateCategoryBtn.addEventListener('click', () => {
 
     const index = customCategories.findIndex(c => c.id === editingCategoryId);
     if (index !== -1) {
-        customCategories[index].name = updatedName; // Updates name with exact capitals/emojis
+        customCategories[index].name = updatedName;
         localStorage.setItem('myCategoriesObjects', JSON.stringify(customCategories));
         
         tabEditorZone.style.display = 'none';
@@ -117,7 +111,6 @@ function displayRecipes(filterCategory = 'all') {
         const card = document.createElement('div');
         card.classList.add('recipe-card');
         
-        // TRANSLATION LAYER: Find matching display name or fallback gracefully
         const matchingCat = customCategories.find(c => c.id === recipe.category);
         const printableCategoryName = matchingCat ? matchingCat.name : recipe.category.toUpperCase().replace('-', ' ');
 
@@ -164,21 +157,20 @@ addCategoryBtn.addEventListener('click', () => {
     
     newCategoryInput.value = '';
     displayCategoryTabs(); 
-    categorySelect.value = uniqueId; // Auto-selects newly created dropdown category
+    categorySelect.value = uniqueId; 
 });
 
-// 7. Prepare the form for an edit (FIXED AND STABILIZED)
+// 7. Prepare the form for an edit
 window.prepareEdit = function(id) {
     const recipeToEdit = recipeRolodex.find(r => r.id === id);
     if (!recipeToEdit) return;
 
     textInput.value = recipeToEdit.text;
     
-    // Check if the recipe's category exists in our dropdown selections
     if (customCategories.some(c => c.id === recipeToEdit.category)) {
         categorySelect.value = recipeToEdit.category;
     } else {
-        categorySelect.selectedIndex = 0; // Safe fallback if legacy string mismatch exists
+        categorySelect.selectedIndex = 0; 
     }
     
     currentUploadedImageBase64 = recipeToEdit.image || "";
@@ -232,39 +224,56 @@ saveBtn.addEventListener('click', () => {
     displayRecipes();
 });
 
-// 10. SCREENSHOT OCR PARSING & IMAGE CAPTURE
-imageUpload.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+// ==========================================
+// 10. DUAL IMAGE HANDLERS (SCANNER VS PHOTO)
+// ==========================================
 
-    textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
-    saveBtn.disabled = true;
-    saveBtn.innerText = "Scanning Image...";
+// HANDLER A: The Text Scanner (Tesseract OCR)
+if (imageUpload) {
+    imageUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    const reader = new FileReader();
-    
-    reader.onload = function() {
-        currentUploadedImageBase64 = reader.result;
+        textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Scanning Image...";
 
-        Tesseract.recognize(
-            currentUploadedImageBase64,
-            'eng',
-            { logger: m => console.log(m) }
-        ).then(({ data: { text } }) => {
-            textInput.value = text;
-            saveBtn.disabled = false;
-            saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-        }).catch(error => {
-            console.error("Tesseract Core Error: ", error);
-            textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
-            saveBtn.disabled = false;
-            saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-        });
-    };
+        const reader = new FileReader();
+        reader.onload = function() {
+            Tesseract.recognize(
+                reader.result,
+                'eng',
+                { logger: m => console.log(m) }
+            ).then(({ data: { text } }) => {
+                textInput.value = text;
+                saveBtn.disabled = false;
+                saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
+            }).catch(error => {
+                console.error("Tesseract Error: ", error);
+                textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
+                saveBtn.disabled = false;
+                saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+}
 
-    reader.readAsDataURL(file);
-});
+// HANDLER B: Dedicated Card Photo Upload (Bypasses OCR completely!)
+if (cardPhotoUpload) {
+    cardPhotoUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
 
-// Initialize elements
+        const reader = new FileReader();
+        reader.onload = function() {
+            currentUploadedImageBase64 = reader.result;
+            alert("Beautiful recipe photo attached successfully! 📸");
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Initialize layout elements automatically on page load
 displayCategoryTabs();
 displayRecipes();
