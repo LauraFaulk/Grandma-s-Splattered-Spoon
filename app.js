@@ -228,53 +228,38 @@ saveBtn.addEventListener('click', () => {
 // 10. DUAL IMAGE HANDLERS (SCANNER VS PHOTO)
 // ==========================================
 
-// HANDLER A: The Text Scanner (Tesseract OCR - Optimized for Speed)
+// HANDLER A: The Text Scanner (Direct Tesseract OCR Engine)
 if (imageUpload) {
-    // 1. Create a persistent background worker immediately on page load
-    let worker = null;
-
-    async function initOcr() {
-        try {
-            // Updated syntax: pass the language ('eng') when creating the worker
-            worker = await Tesseract.createWorker('eng');
-            console.log("OCR background engine fully warmed up and ready!");
-        } catch (e) {
-            console.error("Failed to pre-warm OCR engine:", e);
-        }
-    }
-    initOcr(); // Run it immediately!
-
-    imageUpload.addEventListener('change', async (event) => {
+    imageUpload.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
+        // Force the loading message to show immediately
         textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
         saveBtn.disabled = true;
         saveBtn.innerText = "Scanning Image...";
 
         const reader = new FileReader();
-        reader.onload = async function() {
-            try {
-                // 2. Use the worker to scan the base64 data URL string
-                if (!worker) {
-                    // Fallback if worker wasn't fully ready yet
-                    const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
-                    textInput.value = text;
-                } else {
-                    // Updated syntax for worker recognition
-                    const { data: { text } } = await worker.recognize(reader.result);
-                    textInput.value = text;
-                }
-
+        reader.onload = function() {
+            // Direct call to Tesseract without complex background workers
+            Tesseract.recognize(
+                reader.result,
+                'eng'
+            ).then(({ data: { text } }) => {
+                console.log("OCR scanning complete successfully!");
+                
+                // Drop the beautifully parsed text directly into the text area!
+                textInput.value = text;
+                
+                // Re-enable our save button
                 saveBtn.disabled = false;
                 saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-                console.log("OCR scanning complete!");
-            } catch (error) {
-                console.error("Tesseract Error Details: ", error);
+            }).catch(error => {
+                console.error("Tesseract Core Error Details: ", error);
                 textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
                 saveBtn.disabled = false;
                 saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
-            }
+            });
         };
         reader.readAsDataURL(file);
     });
