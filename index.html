@@ -18,46 +18,50 @@
         <div class="input-group">
             <textarea id="text-input" placeholder="Paste your recipe ingredients and directions here..."></textarea>
             
-            <div class="upload-controls">
+<div class="upload-controls">
                 <label for="image-upload" class="custom-file-upload">
                     📸 Upload Recipe Screenshot
                 </label>
                 <input type="file" id="image-upload" accept="image/*">
- 
-		<div class="category-creator" style="display: flex; gap: 5px; width: 100%;">
-                    <input type="text" id="new-category-input" placeholder="New category name..." style="flex: 1; padding: 5px; font-family: inherit; border: 2px solid #4a3c31; background: #fbf7ed;">
-                    <button id="add-category-btn" type="button" style="padding: 5px 10px; font-size: 0.8rem;">+ Add Tab</button>
-                </div>               
-                
-		<select id="category-select">
-                    <option value="chicken">🍗 Chicken</option>
+
+                <select id="category-select">
+                    <option value="chicken">盒 Chicken</option>
                     <option value="beef">🥩 Beef</option>
-                    <option value="baked-goods">🍞 Baked Goods</option>
-                    <option value="desserts">🍰 Desserts</option>
+                    <option value="baked-goods">🍞 Baking</option>
+                    <option value="desserts">🍰 Sweets</option>
                     <option value="drinks">🍹 Drinks</option>
                 </select>
 
                 <button id="save-btn">Save Vintage Card</button>
-            </div>
-        </div>
+
+                <hr style="width: 100%; border: none; border-top: 1px dashed #4a3c31; margin: 10px 0;">
+
+                <div class="category-creator" style="display: flex; gap: 5px; width: 100%;">
+                    <input type="text" id="new-category-input" placeholder="New category name..." style="flex: 1; padding: 5px; font-family: inherit; border: 2px solid #4a3c31; background: #fbf7ed;">
+                    <button id="add-category-btn" type="button" style="padding: 5px 10px; font-size: 0.8rem;">+ Add Tab</button>
+                </div>
+
+                <div id="tab-editor-zone" style="display: none; gap: 5px; width: 100%; border: 1px dashed #4a3c31; padding: 5px; box-sizing: border-box;">
+                    <input type="text" id="edit-category-input" style="flex: 1; padding: 5px; font-family: inherit; border: 2px solid #4a3c31; background: #fff;">
+                    <button id="update-category-btn" type="button" style="padding: 5px 10px; font-size: 0.8rem; background-color: #8ba88f; color: white;">Fix Tab</button>
+                    <button id="cancel-category-btn" type="button" style="padding: 5px 10px; font-size: 0.8rem; background-color: #e6dfcb;">X</button>
+                </div>
+            </div> 
+        </div> 
     </section>
 
     <nav id="category-nav">
-	<div class="heading-card" data-category="all">All</div>
-        <div class="heading-card" data-category="chicken">🍗 Chicken</div>
+        <div class="heading-card" data-category="all">All</div>
+        <div class="heading-card" data-category="chicken">盒 Chicken</div>
         <div class="heading-card" data-category="beef">🥩 Beef</div>
         <div class="heading-card" data-category="baked-goods">🍞 Baking</div>
         <div class="heading-card" data-category="desserts">🍰 Sweets</div>
         <div class="heading-card" data-category="drinks">🍹 Drinks</div>
     </nav>
 
-    <main id="recipe-grid">
-        </main>
+    <main id="recipe-grid"></main>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="app.js"></script>
 </body>
-</html><h1>The Splattered Spoon</h1>
-
-
+</html>
