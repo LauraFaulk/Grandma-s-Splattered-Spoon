@@ -232,9 +232,10 @@ saveBtn.addEventListener('click', () => {
 if (imageUpload) {
     // 1. Create a persistent background worker immediately on page load
     let worker = null;
-    
+
     async function initOcr() {
         try {
+            // Updated syntax: pass the language ('eng') when creating the worker
             worker = await Tesseract.createWorker('eng');
             console.log("OCR background engine fully warmed up and ready!");
         } catch (e) {
@@ -254,21 +255,22 @@ if (imageUpload) {
         const reader = new FileReader();
         reader.onload = async function() {
             try {
-                // 2. Use the pre-warmed worker instead of spinning up a fresh instance
+                // 2. Use the worker to scan the base64 data URL string
                 if (!worker) {
-                    // Fallback if worker wasn't ready yet
+                    // Fallback if worker wasn't fully ready yet
                     const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
                     textInput.value = text;
                 } else {
+                    // Updated syntax for worker recognition
                     const { data: { text } } = await worker.recognize(reader.result);
                     textInput.value = text;
                 }
-                
+
                 saveBtn.disabled = false;
                 saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
                 console.log("OCR scanning complete!");
             } catch (error) {
-                console.error("Tesseract Error: ", error);
+                console.error("Tesseract Error Details: ", error);
                 textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
                 saveBtn.disabled = false;
                 saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
