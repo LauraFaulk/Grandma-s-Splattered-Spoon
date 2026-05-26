@@ -228,34 +228,34 @@ saveBtn.addEventListener('click', () => {
 // 10. DUAL IMAGE HANDLERS (SCANNER VS PHOTO)
 // ==========================================
 
-// HANDLER A: The Text Scanner (Direct Tesseract OCR Engine)
+// HANDLER A: The Text Scanner (Direct Non-Worker Execution Loop)
 if (imageUpload) {
     imageUpload.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
-        // Force the loading message to show immediately
+        // Force the loading message to update layout instantly
         textInput.value = "Reading Grandma's handwriting... please wait a moment... 👵✨";
         saveBtn.disabled = true;
         saveBtn.innerText = "Scanning Image...";
 
         const reader = new FileReader();
         reader.onload = function() {
-            // Direct call to Tesseract without complex background workers
+            // Call the direct engine to bypass virtual thread download limits
             Tesseract.recognize(
                 reader.result,
                 'eng'
             ).then(({ data: { text } }) => {
-                console.log("OCR scanning complete successfully!");
+                console.log("OCR engine successfully processed image data.");
                 
-                // Drop the beautifully parsed text directly into the text area!
+                // Populate the text field with the clean text strings
                 textInput.value = text;
                 
-                // Re-enable our save button
+                // Reactivate saving functions
                 saveBtn.disabled = false;
                 saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
             }).catch(error => {
-                console.error("Tesseract Core Error Details: ", error);
+                console.error("Tesseract Engine Communication Exception: ", error);
                 textInput.value = "Scanned the image, but couldn't auto-parse text. Type details below!";
                 saveBtn.disabled = false;
                 saveBtn.innerText = editingRecipeId ? "Update Vintage Card" : "Save Vintage Card";
