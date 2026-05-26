@@ -111,19 +111,37 @@ addCategoryBtn.addEventListener('click', () => {
     displayCategoryTabs(); // Redraw the UI tabs instantly
 });
 
-// 6. Prepare the form for an edit
-window.prepareEdit = function(id) {
-    const recipeToEdit = recipeRolodex.find(r => r.id === id);
-    if (!recipeToEdit) return;
+// 6. Handle adding a brand new custom folder tab category
+addCategoryBtn.addEventListener('click', () => {
+    const originalName = newCategoryInput.value.trim();
+    const uniqueId = originalName.toLowerCase().replace(/\s+/g, '-'); 
 
-    textInput.value = recipeToEdit.text;
-    categorySelect.value = recipeToEdit.category;
-    currentUploadedImageBase64 = recipeToEdit.image || "";
+    if (originalName === '') return;
+    
+    // Safety check to ensure we don't duplicate computer IDs
+    if (customCategories.some(c => c.id === uniqueId)) {
+        alert("A tab with that name already exists!");
+        return;
+    }
 
-    editingRecipeId = id;
-    saveBtn.innerText = "Update Vintage Card";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+    // Save as an object to hold onto your specific capitalization structure!
+    const newTabObject = {
+        id: uniqueId,
+        name: originalName
+    };
+
+    customCategories.push(newTabObject);
+    localStorage.setItem('myCategoriesObjects', JSON.stringify(customCategories));
+    
+    newCategoryInput.value = '';
+    
+    // Redraw the tabs so the new one appears on screen instantly
+    displayCategoryTabs(); 
+
+    // NEW: Auto-select this brand new category in the dropdown menu 
+    // This makes it seamless if you are editing a card and want to put it here!
+    categorySelect.value = uniqueId;
+});
 
 // 7. Delete a recipe permanently
 window.deleteRecipe = function(id) {
